@@ -1,0 +1,40 @@
+Metadata-Version: 1.0
+Name: tipfy.ext.session
+Version: 0.6.2
+Summary: Session extension for tipfy
+Home-page: http://www.tipfy.org/
+Author: Rodrigo Moraes
+Author-email: rodrigo.moraes@gmail.com
+License: BSD
+Description: 
+        tipfy.ext.session
+        =================
+        
+        This extension implements sessions using datastore, memcache or secure cookies
+        for `tipfy <http://www.tipfy.org/>`_.
+        
+        It also provides an interface to get and set flash messages and to set and
+        delete secure cookies or ordinary cookies, and several convenient
+        session-related mixins for the RequestHandler.
+        
+        Links
+        -----
+        * `Documentation <http://www.tipfy.org/wiki/extensions/session/>`_
+        * `Source Code Repository <http://code.google.com/p/tipfy-ext-session/>`_
+        * `Issue Tracker <http://code.google.com/p/tipfy-ext-session/issues/list>`_
+        
+        About tipfy
+        -----------
+        * `Home page <http://www.tipfy.org/>`_
+        * `Extension list <http://www.tipfy.org/wiki/extensions/>`_
+        * `Discussion Group <http://groups.google.com/group/tipfy>`_
+        
+Platform: any
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
+Classifier: Topic :: Software Development :: Libraries :: Python Modules

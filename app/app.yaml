@@ -1,0 +1,86 @@
+application: ano-devs-an
+version: 1
+runtime: python
+api_version: 1
+
+derived_file_type:
+- python_precompiled
+
+default_expiration: "1d"
+
+builtins:
+- admin_redirect: on
+- appstats: on
+- datastore_admin: on
+- remote_api: on
+
+handlers:
+- url: /favicon.ico
+  static_files: statics/favicon.ico
+  upload: statics/favicon.ico
+  mime_type: image/x-icon
+  secure: never
+
+- url: /robots.txt
+  static_files: statics/robots.txt
+  upload: statics/robots.txt
+  secure: never
+
+- url: /js
+  static_dir: statics/javascripts
+  secure: never
+
+- url: /css
+  static_dir: statics/stylesheets
+  secure: never
+
+- url: /statics
+  static_dir: statics
+  secure: never
+
+- url: /remote_api
+  script: $PYTHON_LIB/google/appengine/ext/remote_api/handler.py
+  secure: always
+  login: admin
+
+- url: /_ah/queue/deferred
+  script: main.py
+  login: admin
+
+- url: /test.*
+  script: gaeunit.py
+  login: admin
+
+- url: /_api/.*
+  script: main.py
+  secure: always
+  login: required
+
+- url: /.*
+  script: main.py
+  secure: never
+
+skip_files: |
+  ^(.*/)?(
+  (#.*#)|
+  (.*\.po[t]*)|
+  (.*\.py[co])|
+  (.*~)|
+  (\.git/.*)|
+  (\.gitignore)|
+  (LICENSE)|
+  (README)|
+  (README\.pdf)|
+  (README\.txt)|
+  (TODO)|
+  (TODO\.pdf)|
+  (\..*)|
+  (_backup/.*)|
+  (app\.ya*ml)|
+  (app\.yaml\.sample)|
+  (cron\.yaml\.sample)|
+  (distlib/babel\/localedata\/.*)|
+  (gaema-LICENSE)|
+  (index\.ya*ml)|
+  (index\.yaml\.sample)|
+  )$

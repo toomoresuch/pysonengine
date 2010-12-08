@@ -1,0 +1,35 @@
+Metadata-Version: 1.0
+Name: tipfy.ext.jinja2
+Version: 0.7
+Summary: Jinja2 extension for tipfy
+Home-page: http://www.tipfy.org/
+Author: Rodrigo Moraes
+Author-email: rodrigo.moraes@gmail.com
+License: BSD
+Description: 
+        tipfy.ext.jinja2
+        ================
+        
+        This extension provides Jinja2 support for tipfy.
+        
+        Documentation is available at
+        `http://www.tipfy.org/wiki/extensions/jinja2/ <http://www.tipfy.org/wiki/extensions/jinja2/>`_.
+        
+        Links
+        -----
+        * `Tipfy <http://www.tipfy.org/>`_
+        * `API Documentation <http://www.tipfy.org/docs/>`_
+        * `Wiki <http://www.tipfy.org/wiki/>`_
+        * `Discussion Group <http://groups.google.com/group/tipfy>`_
+        * `Issue Tracker <http://code.google.com/p/tipfy/issues/list>`_
+        * `Source Code Repository <http://code.google.com/p/tipfy/>`_
+        
+Platform: any
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
+Classifier: Topic :: Software Development :: Libraries :: Python Modules

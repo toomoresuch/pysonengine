@@ -1,0 +1,36 @@
+Metadata-Version: 1.0
+Name: tipfy.ext.debugger
+Version: 0.6.1
+Summary: Debugger extension for tipfy
+Home-page: http://www.tipfy.org/
+Author: Rodrigo Moraes
+Author-email: rodrigo.moraes@gmail.com
+License: BSD
+Description: 
+        tipfy.ext.debugger
+        ==================
+        
+        This extension provides a middleware that enables a useful debugger for
+        `tipfy <http://www.tipfy.org/>`_.
+        
+        Links
+        -----
+        * `Documentation <http://www.tipfy.org/wiki/extensions/debugger/>`_
+        * `Source Code Repository <http://code.google.com/p/tipfy-ext-debugger/>`_
+        * `Issue Tracker <http://code.google.com/p/tipfy-ext-debugger/issues/list>`_
+        
+        About tipfy
+        -----------
+        * `Home page <http://www.tipfy.org/>`_
+        * `Extension list <http://www.tipfy.org/wiki/extensions/>`_
+        * `Discussion Group <http://groups.google.com/group/tipfy>`_
+        
+Platform: any
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
+Classifier: Topic :: Software Development :: Libraries :: Python Modules

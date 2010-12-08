@@ -1,0 +1,32 @@
+#!/usr/bin/python2.6
+
+import os
+
+join = os.path.join
+base = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
+base = os.path.dirname(base)
+
+import sys
+sys.path[0:0] = [
+    join(base, 'parts/google_appengine'),
+    join(base, 'parts/google_appengine/lib/antlr3'),
+    join(base, 'parts/google_appengine/lib/django'),
+    join(base, 'parts/google_appengine/lib/fancy_urllib'),
+    join(base, 'parts/google_appengine/lib/ipaddr'),
+    join(base, 'parts/google_appengine/lib/webob'),
+    join(base, 'parts/google_appengine/lib/yaml/lib'),
+    join(base, 'app'),
+    join(base, 'app/distlib'),
+    join(base, 'app/lib'),
+    join(base, 'eggs/appfy.recipe.gae-0.9.2-py2.6.egg'),
+    join(base, 'parts/google_appengine'),
+    ]
+
+
+gae = join(base, 'parts/google_appengine')
+cfg = join(base, 'gaetools.cfg')
+
+import appfy.recipe.gae.scripts
+
+if __name__ == '__main__':
+    appfy.recipe.gae.scripts.bulkloader(base, gae, cfg)

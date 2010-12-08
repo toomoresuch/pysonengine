@@ -1,0 +1,38 @@
+Metadata-Version: 1.0
+Name: tipfy.ext.auth.facebook
+Version: 0.2
+Summary: Facebook authentication extension for tipfy
+Home-page: http://www.tipfy.org/
+Author: Rodrigo Moraes
+Author-email: rodrigo.moraes@gmail.com
+License: Apache Software License
+Description: 
+        tipfy.ext.auth.facebook
+        =======================
+        
+        This extension provides a Facebook authentication provider tipfy, the almighty
+        little framework for Google App Engine.
+        
+        Documentation is available at
+        `http://www.tipfy.org/wiki/extensions/auth/facebook/ <http://www.tipfy.org/wiki/extensions/auth/facebook/>`_.
+        
+        Ported from `tornado.auth <http://github.com/facebook/tornado/blob/master/tornado/auth.py>`_.
+        
+        Links
+        -----
+        * `Tipfy <http://www.tipfy.org/>`_
+        * `API Documentation <http://www.tipfy.org/docs/>`_
+        * `Wiki <http://www.tipfy.org/wiki/>`_
+        * `Discussion Group <http://groups.google.com/group/tipfy>`_
+        * `Issue Tracker <http://code.google.com/p/tipfy/issues/list>`_
+        * `Source Code Repository <http://code.google.com/p/tipfy/>`_
+        
+Platform: any
+Classifier: Development Status :: 1 - Planning
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
+Classifier: Topic :: Software Development :: Libraries :: Python Modules

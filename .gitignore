@@ -1,0 +1,10 @@
+## Directories. ##
+distlib/*
+
+## Any Files fixed by extension. ##
+*.pyc
+*.zip
+
+## Specifed Files. ##
+index.yaml
+README.txt

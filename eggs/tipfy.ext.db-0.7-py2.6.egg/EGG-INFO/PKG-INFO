@@ -1,0 +1,34 @@
+Metadata-Version: 1.0
+Name: tipfy.ext.db
+Version: 0.7
+Summary: Database extension for tipfy
+Home-page: http://www.tipfy.org/
+Author: Rodrigo Moraes
+Author-email: rodrigo.moraes@gmail.com
+License: BSD
+Description: 
+        tipfy.ext.db
+        ============
+        
+        This extension provides datastore utilities for `tipfy <http://www.tipfy.org/>`_.
+        
+        Links
+        -----
+        * `Source Code Repository <http://code.google.com/p/tipfy-ext-db/>`_
+        * `Issue Tracker <http://code.google.com/p/tipfy-ext-db/issues/list>`_
+        
+        About tipfy
+        -----------
+        * `Home page <http://www.tipfy.org/>`_
+        * `Extension list <http://www.tipfy.org/wiki/extensions/>`_
+        * `Discussion Group <http://groups.google.com/group/tipfy>`_
+        
+Platform: any
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
+Classifier: Topic :: Software Development :: Libraries :: Python Modules

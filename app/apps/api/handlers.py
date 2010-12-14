@@ -17,7 +17,7 @@ from tipfy import RequestHandler, Response, render_json_response
 from werkzeug.exceptions import InternalServerError, NotFound
 
 from apps.api.models import PEDoc
-from json_utils import render_escaped_json_response
+from my_utils import render_escaped_json_response, ConflictError
 
 
 class BaseHandler(RequestHandler):
@@ -73,6 +73,8 @@ class UpdateHandler(BaseHandler):
             result = PEDoc.update_and_get_by_dict(doc_id, doc_type, doc_values)
         except InternalServerError:
             return Response(status=500)
+        except ConflictError:
+            return Response(status=409)
 
         return render_escaped_json_response(result)
 

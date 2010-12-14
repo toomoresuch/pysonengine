@@ -2,6 +2,7 @@
 
 from simplejson.encoder import JSONEncoder
 from tipfy import Response
+from werkzeug.exceptions import HTTPException
 
 
 class JSONEncoderForHTMLEscape(JSONEncoder):
@@ -48,6 +49,11 @@ def render_escaped_json_response(*args, **kwargs):
 
     return Response(JSONEncoderForHTMLEscape().encode(*args, **kwargs),
                     mimetype='application/json')
+
+
+class ConflictError(HTTPException):
+
+    code = 409
 
 
 

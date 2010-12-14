@@ -17,11 +17,13 @@ from google.appengine.ext import db
 from tipfy.ext.db import JsonProperty, retry_on_timeout
 from werkzeug.exceptions import abort
 
+from my_utils import ConflictError
+
 
 class PEDoc(db.Model):
 
     REMOVE_KEYS_FROM_DOC_VALUES = ('_docId', '_createdAt', '_updatedAt',
-                                   'docType')
+                                   'docType', '_checkUpdatesAfter')
 
     # not jsonize, and auto.
 
@@ -71,7 +73,7 @@ class PEDoc(db.Model):
 
     @classmethod
     def _update_model(cls, model, doc_values):
-        model.docValues = doc_values
+        model.docValues.update(doc_values)
         model.put()
 
     @classmethod
@@ -120,10 +122,22 @@ class PEDoc(db.Model):
         doc_values,
         ):
 
+        try:
+            updatedAt = doc_values['_updatedAt']
+        except KeyError:
+            try:
+                updatedAt = doc_values['_checkUpdatesAfter']
+            except KeyError:
+                updatedAt = None
+
+        model = cls.get_by_key_name(key_name)
+
         doc = cls._remove_keys_from_doc_values(doc_values,
                 cls.REMOVE_KEYS_FROM_DOC_VALUES)
 
-        model = cls.get_by_key_name(key_name)
+        if updatedAt and model.updatedAt.isoformat() > updatedAt:
+            raise ConflictError()
+
         try:
             db.run_in_transaction(cls._update_model, model, doc)  # update.
         except db.TransactionFailedError:

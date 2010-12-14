@@ -33,8 +33,7 @@ class TestCase(gae_test_base.GAETestBase):
 
     DOC_ID = ', "_docId": "1234567890abcdefghijklmnopqrstuv"'
     SEED = '{"double": 2e+1, "boolean": [true, false], "string": "Hoge"%s}'
-    SEED_FOR_UPDATE = \
-        '{"double": 3e-1, "boolean": [false, true], "string": "Fuga"%s}'
+    SEED_FOR_UPDATE = '{"double": 3e-1, "boolean": [false, true]%s}'
 
     DAT = urllib.quote(SEED % '')
     DAT_WITH_DOC_ID = urllib.quote(SEED % DOC_ID)
@@ -163,7 +162,7 @@ class TestCase(gae_test_base.GAETestBase):
         self.assertTrue(updated_obj['_updatedAt'] > obj['_updatedAt'])
         self.assertEqual(updated_obj['boolean'], [False, True])
         self.assertEqual(updated_obj['double'], 0.3)
-        self.assertEqual(updated_obj['string'], 'Fuga')
+        self.assertEqual(updated_obj['string'], 'Hoge')
 
     #
 
@@ -235,7 +234,41 @@ class TestCase(gae_test_base.GAETestBase):
     #
 
     def test_get_status_code_409(self):
-        pass
+
+        # データを新規保存
+
+        response = self.CLIENT.post('/_api/myDoc?_doc=%s'
+                                    % self.DAT_WITH_DOC_ID)
+        obj = json.loads(response.data)
+
+        # データを割り込み更新
+
+        interruped_response = \
+            self.CLIENT.put('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_doc=%s'
+                             % self.DAT_FOR_UPDATE)
+
+        # データを更新 by _updatedAt
+
+        dat = '{"string": "Fuga", "_updatedAt": "%s"}' % obj['_updatedAt']
+        updated_response = \
+            self.CLIENT.put('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_doc=%s'
+                             % urllib.quote(dat))
+
+        # status code の確認
+
+        self.assertEqual(updated_response.status_code, 409)
+
+        # データを更新 by _checkUpdatesAfter
+
+        dat = '{"string": "Fuga", "_checkUpdatesAfter": "%s"}' \
+            % obj['_updatedAt']
+        updated_response = \
+            self.CLIENT.put('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_doc=%s'
+                             % urllib.quote(dat))
+
+        # status code の確認
+
+        self.assertEqual(updated_response.status_code, 409)
 
     def test_get_status_code_500(self):
         pass

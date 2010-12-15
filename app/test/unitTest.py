@@ -33,17 +33,23 @@ class TestCase(gae_test_base.GAETestBase):
 
     DOC_ID = ', "_docId": "1234567890abcdefghijklmnopqrstuv"'
     SEED = '{"double": 2e+1, "boolean": [true, false], "string": "Hoge"%s}'
-    SEED_FOR_UPDATE = '{"double": 3e-1, "boolean": [false, true]%s}'
+    SEED_FOR_UP_B = '{"boolean": [false, true]%s}'
+    SEED_FOR_UP_D = '{"double": 3e-1%s}'
+    SEED_FOR_UP_S = '{"string": "Fuga"%s}'
 
     DAT = urllib.quote(SEED % '')
     DAT_WITH_DOC_ID = urllib.quote(SEED % DOC_ID)
 
-    DAT_FOR_UPDATE = urllib.quote(SEED_FOR_UPDATE % '')
-    DAT_FOR_UPDATE_WITH_DOC_ID = urllib.quote(SEED_FOR_UPDATE % DOC_ID)
+    DAT_FOR_UP_B = urllib.quote(SEED_FOR_UP_B % '')
+    DAT_FOR_UP_D = urllib.quote(SEED_FOR_UP_D % '')
+    DAT_FOR_UP_S = urllib.quote(SEED_FOR_UP_S % '')
+    DAT_FOR_UP_B_WITH_DOC_ID = urllib.quote(SEED_FOR_UP_B % DOC_ID)
+    DAT_FOR_UP_D_WITH_DOC_ID = urllib.quote(SEED_FOR_UP_D % DOC_ID)
+    DAT_FOR_UP_S_WITH_DOC_ID = urllib.quote(SEED_FOR_UP_S % DOC_ID)
 
     CLIENT = Tipfy(rules=[Rule('/_api/<doc_type>/<doc_id>',
                    endpoint='api/doctype/docid',
-                   handler='apps.api.handlers.UpdateHandler'),
+                   handler='apps.api.handlers.RestfulHandler'),
                    Rule('/_api/<doc_type>', endpoint='api/doctype',
                    handler='apps.api.handlers.CreateHandler'
                    )]).get_test_client()
@@ -54,17 +60,12 @@ class TestCase(gae_test_base.GAETestBase):
     def tearDown(self):
         pass
 
-    #
+    # ---------------------------------------- #
+    # ---------------------------------------- #
 
-    def test_post_a_new_entity_without_docId_by_json(self):
+    def _assert_create(self, response):
 
-        # entity 数を POST の前後で確認して保存の有無
-
-        self.assertEqual(PEDoc.all().count(), 0)
-        response = self.CLIENT.post('/_api/myDoc?_doc=%s' % self.DAT)
-        self.assertEqual(PEDoc.all().count(), 1)
-
-        # status code
+        # status code の確認
 
         self.assertEqual(response.status_code, 200)
 
@@ -89,65 +90,67 @@ class TestCase(gae_test_base.GAETestBase):
         self.assertEqual(model.schemaVersion, 1)
         self.assertEqual(model.version, 1)
 
-    #
+    # ---------------------------------------- #
 
-    def test_post_a_new_entity_with_docId_by_json(self):
-        response = self.CLIENT.post('/_api/myDoc?_doc=%s'
-                                    % self.DAT_WITH_DOC_ID)
+    def test_success_post_a_new_entity_by_json(self):
+
+        # entity 数を POST の前後で確認して保存の有無
+
+        self.assertEqual(PEDoc.all().count(), 0)
+        response = self.CLIENT.post('/_api/myDoc?_doc=%s' % self.DAT)
+        self.assertEqual(PEDoc.all().count(), 1)
+        self._assert_create(response)
+
+        # with _docId.
+
+        response_with_doc_id = self.CLIENT.post('/_api/myDoc?_doc=%s'
+                % self.DAT_WITH_DOC_ID)
+        self._assert_create(response_with_doc_id)
 
         # response に含まれるデータにおいて、_docId のみ確認
 
-        docId = json.loads(response.data)['_docId']
-        self.assertEqual(docId, '1234567890abcdefghijklmnopqrstuv')
+        doc_id = json.loads(response_with_doc_id.data)['_docId']
+        self.assertEqual(doc_id, '1234567890abcdefghijklmnopqrstuv')
 
-    #
+        # update syntax
 
-    def test_post_a_existed_entity_with_docId_by_create_style_and_json(self):
+        update_syntax_response = \
+            self.CLIENT.post('/_api/myDoc/vutsrqponmlkjihgfedcba0987654321?_doc=%s'
+                              % self.DAT)
+        self._assert_create(update_syntax_response)
 
-        # データを新規作成
+        # response に含まれるデータにおいて、_docId のみ確認
 
-        response = self.CLIENT.post('/_api/myDoc?_doc=%s'
-                                    % self.DAT_WITH_DOC_ID)
+        doc_id_up = json.loads(update_syntax_response.data)['_docId']
+        self.assertEqual(doc_id_up, 'vutsrqponmlkjihgfedcba0987654321')
 
-        # データを更新
-
-        updated_response = self.CLIENT.post('/_api/myDoc?_doc=%s'
-                % self.DAT_FOR_UPDATE_WITH_DOC_ID)
-
-        # status code の確認
-
-        self.assertEqual(updated_response.status_code, 404)
+    # ---------------------------------------- #
+    # ---------------------------------------- #
 
     # def test_post_without_docId_by_update_style_and_json(self):
     #     response = self.CLIENT.post('/_api/myDoc/?_doc=%s' % self.DAT)
+    #     pass
 
-    #
-
-    def test_post_a_existed_entity_with_no_409_by_json(self):
-
-        # データを新規保存
-
-        response = self.CLIENT.post('/_api/myDoc?_doc=%s'
-                                    % self.DAT_WITH_DOC_ID)
-        obj = json.loads(response.data)
-
-        # データを更新
-
-        updated_response = \
-            self.CLIENT.post('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_doc=%s'
-                              % self.DAT_FOR_UPDATE)
-        updated_obj = json.loads(updated_response.data)
-        updated_model = PEDoc.get_by_key_name(updated_obj['_docId'])
+    def _assert_update(
+        self,
+        first_response,
+        second_response,
+        key,
+        value,
+        ):
 
         # status code の確認
 
-        self.assertEqual(updated_response.status_code, 200)
+        self.assertEqual(second_response.status_code, 200)
 
         # データに変更が無いもの
 
+        obj = json.loads(first_response.data)
+        updated_obj = json.loads(second_response.data)
+        updated_model = PEDoc.get_by_key_name(updated_obj['_docId'])
+
         self.assertEqual(updated_obj['_createdAt'], obj['_createdAt'])
-        self.assertEqual(updated_obj['_docId'],
-                         '1234567890abcdefghijklmnopqrstuv')
+        self.assertEqual(updated_obj['_docId'], obj['_docId'])
         self.assertEqual(updated_obj['docType'], 'myDoc')
 
         self.assertEqual(updated_model.createdBy.email(),
@@ -160,57 +163,76 @@ class TestCase(gae_test_base.GAETestBase):
         # データに変更が有るもの
 
         self.assertTrue(updated_obj['_updatedAt'] > obj['_updatedAt'])
-        self.assertEqual(updated_obj['boolean'], [False, True])
-        self.assertEqual(updated_obj['double'], 0.3)
-        self.assertEqual(updated_obj['string'], 'Hoge')
+        self.assertEqual(updated_obj[key], value)
 
-    #
+    # ---------------------------------------- #
 
-    def test_put_a_existed_entity_with_no_409_by_json(self):
+    def test_success_post_and_put_a_existed_entity_by_json(self):
 
         # データを新規保存
 
         response = self.CLIENT.post('/_api/myDoc?_doc=%s'
                                     % self.DAT_WITH_DOC_ID)
 
-        # データを更新
+        # データを更新 create syntax
 
-        updated_response = \
-            self.CLIENT.put('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_doc=%s'
-                             % self.DAT_FOR_UPDATE)
+        create_syntax_response = self.CLIENT.post('/_api/myDoc?_doc=%s'
+                % self.DAT_FOR_UP_B_WITH_DOC_ID)
+        self._assert_update(response, create_syntax_response, 'boolean',
+                            [False, True])
 
-        # status code の確認
+        # データを更新 update syntax
 
-        self.assertEqual(updated_response.status_code, 200)
-
-    #
-
-    def test_post_a_new_entity_with_docId_by_update_style_and_json(self):
-        response = \
+        update_syntax_response = \
             self.CLIENT.post('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_doc=%s'
-                              % self.DAT)
+                              % self.DAT_FOR_UP_D)
+        self._assert_update(response, update_syntax_response, 'double', 0.3)
 
-        # status code の確認
+        # データを更新 put
 
-        self.assertEqual(response.status_code, 404)
-
-    #
-
-    def test_put_a_new_entity_with_docId_by_json(self):
-        response = \
+        put_response = \
             self.CLIENT.put('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_doc=%s'
-                             % self.DAT)
+                             % self.DAT_FOR_UP_S)
+        self._assert_update(response, put_response, 'string', 'Fuga')
 
-        # status code の確認
+    # ---------------------------------------- #
+    # ---------------------------------------- #
 
-        self.assertEqual(response.status_code, 404)
+    def test_success_delete_a_existed_entity_by_json(self):
 
-    #
+        # データを新規保存 & 削除
 
-    # def test_get_status_code_403(self):
-    #     pass
+        self.CLIENT.post('/_api/myDoc?_doc=%s' % self.DAT_WITH_DOC_ID)
+        response = \
+            self.CLIENT.put('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_method=delete'
+                            )
 
-    #
+        # status code の確認 & データの削除を確認
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(PEDoc.get_by_key_name('1234567890abcdefghijklmnopqrstuv'
+                         ), None)
+
+        # データを新規保存 & 削除
+
+        self.CLIENT.post('/_api/myDoc?_doc=%s' % self.DAT_WITH_DOC_ID)
+        response = \
+            self.CLIENT.delete('/_api/myDoc/1234567890abcdefghijklmnopqrstuv')
+
+        # status code の確認 & データの削除を確認
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(PEDoc.get_by_key_name('1234567890abcdefghijklmnopqrstuv'
+                         ), None)
+
+    # ---------------------------------------- #
+    # ---------------------------------------- #
+
+    def test_get_status_code_403(self):
+        pass
+
+    # ---------------------------------------- #
+    # ---------------------------------------- #
 
     def test_get_status_code_404(self):
 
@@ -218,6 +240,7 @@ class TestCase(gae_test_base.GAETestBase):
 
         response = self.CLIENT.post('/_api/myDoc?_doc')
         self.assertEqual(response.status_code, 404)
+
         response = \
             self.CLIENT.put('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_doc')
         self.assertEqual(response.status_code, 404)
@@ -226,49 +249,72 @@ class TestCase(gae_test_base.GAETestBase):
 
         response = self.CLIENT.post('/_api/myDoc?_doc=')
         self.assertEqual(response.status_code, 404)
+
         response = \
             self.CLIENT.put('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_doc='
                             )
         self.assertEqual(response.status_code, 404)
 
-    #
+        # 新規 entity を PUT した場合
+
+        response = \
+            self.CLIENT.put('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_doc=%s'
+                             % self.DAT)
+        self.assertEqual(response.status_code, 404)
+
+        # 新規 entity を DELETE した場合
+
+        response = \
+            self.CLIENT.delete('/_api/myDoc/1234567890abcdefghijklmnopqrstuv')
+        self.assertEqual(response.status_code, 404)
+
+    # ---------------------------------------- #
+    # ---------------------------------------- #
 
     def test_get_status_code_409(self):
 
-        # データを新規保存
+        # データを新規保存 & データを割り込み更新
 
         response = self.CLIENT.post('/_api/myDoc?_doc=%s'
                                     % self.DAT_WITH_DOC_ID)
         obj = json.loads(response.data)
-
-        # データを割り込み更新
-
         interruped_response = \
             self.CLIENT.put('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_doc=%s'
-                             % self.DAT_FOR_UPDATE)
+                             % self.DAT_FOR_UP_B)
 
-        # データを更新 by _updatedAt
+        # データを更新 by _updatedAt & status code の確認
 
         dat = '{"string": "Fuga", "_updatedAt": "%s"}' % obj['_updatedAt']
         updated_response = \
             self.CLIENT.put('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_doc=%s'
                              % urllib.quote(dat))
-
-        # status code の確認
-
         self.assertEqual(updated_response.status_code, 409)
 
-        # データを更新 by _checkUpdatesAfter
+        # データを更新 by _checkUpdatesAfter & status code の確認
 
         dat = '{"string": "Fuga", "_checkUpdatesAfter": "%s"}' \
             % obj['_updatedAt']
         updated_response = \
             self.CLIENT.put('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_doc=%s'
                              % urllib.quote(dat))
-
-        # status code の確認
-
         self.assertEqual(updated_response.status_code, 409)
+
+        # データを削除 by _updatedAt & status code の確認
+
+        response = \
+            self.CLIENT.delete('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_updatedAt=%s'
+                                % obj['_updatedAt'])
+        self.assertEqual(updated_response.status_code, 409)
+
+        # データを削除 by _checkUpdatesAfter & status code の確認
+
+        response = \
+            self.CLIENT.delete('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_checkUpdatesAfter=%s'
+                                % obj['_updatedAt'])
+        self.assertEqual(updated_response.status_code, 409)
+
+    # ---------------------------------------- #
+    # ---------------------------------------- #
 
     def test_get_status_code_500(self):
         pass

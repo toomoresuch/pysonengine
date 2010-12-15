@@ -13,7 +13,7 @@
 from tipfy import Rule
 
 UPDATE = Rule('/_api/<doc_type>/<doc_id>', endpoint='api/doctype/docid',
-              handler='apps.api.handlers.UpdateHandler')
+              handler='apps.api.handlers.RestfulHandler')
 CREATE = Rule('/_api/<doc_type>', endpoint='api/doctype',
               handler='apps.api.handlers.CreateHandler')
 

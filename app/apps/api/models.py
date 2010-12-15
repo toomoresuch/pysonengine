@@ -59,10 +59,6 @@ class PEDoc(db.Model):
         return key_name
 
     @classmethod
-    def _check_updatedAt(cls, old):
-        pass
-
-    @classmethod
     def _remove_keys_from_doc_values(cls, doc_values, touple):
         for i in touple:
             try:
@@ -84,7 +80,6 @@ class PEDoc(db.Model):
             '_updatedAt': model.updatedAt.isoformat(),
             'docType': model.docType,
             }
-
         model.docValues.update(base)
         return model.docValues
 
@@ -115,6 +110,19 @@ class PEDoc(db.Model):
         return cls._convert_dict(model)
 
     @classmethod
+    def _is_updated(cls, key_name, doc_values):
+        try:
+            updated_at = doc_values['_updatedAt']
+        except KeyError:
+            try:
+                updated_at = doc_values['_checkUpdatesAfter']
+            except KeyError:
+                updated_at = None
+
+        model = cls.get_by_key_name(key_name)
+        return updated_at and model.updatedAt.isoformat() > updated_at
+
+    @classmethod
     def update_and_get_by_dict(
         cls,
         key_name,
@@ -122,21 +130,12 @@ class PEDoc(db.Model):
         doc_values,
         ):
 
-        try:
-            updatedAt = doc_values['_updatedAt']
-        except KeyError:
-            try:
-                updatedAt = doc_values['_checkUpdatesAfter']
-            except KeyError:
-                updatedAt = None
+        if cls._is_updated(key_name, doc_values):
+            raise ConflictError()
 
         model = cls.get_by_key_name(key_name)
-
         doc = cls._remove_keys_from_doc_values(doc_values,
                 cls.REMOVE_KEYS_FROM_DOC_VALUES)
-
-        if updatedAt and model.updatedAt.isoformat() > updatedAt:
-            raise ConflictError()
 
         try:
             db.run_in_transaction(cls._update_model, model, doc)  # update.
@@ -145,6 +144,19 @@ class PEDoc(db.Model):
 
         model = cls.get_by_key_name(key_name)
         return cls._convert_dict(model)
+
+    @classmethod
+    def delete_in_txn(cls, key_name, updated_at):
+        if cls._is_updated(key_name, {'_updatedAt': updated_at}):
+            raise ConflictError()
+
+        model = PEDoc.get_by_key_name(key_name)
+        try:
+            db.run_in_transaction(model.delete)  # delete.
+        except db.TransactionFailedError:
+            abort(500)
+        except (AttributeError, db.NotSavedError):
+            abort(404)
 
 
 

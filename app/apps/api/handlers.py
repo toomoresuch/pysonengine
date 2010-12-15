@@ -46,19 +46,32 @@ class CreateHandler(BaseHandler):
             doc_id = None
 
         if doc_id and PEDoc.get_by_key_name(doc_id):
-            return Response(status=404)
-
-        try:
-            result = PEDoc.create_and_get_by_dict(doc_id, doc_type, doc_values)
-        except InternalServerError:
-            return Response(status=500)
+            try:
+                result = PEDoc.update_and_get_by_dict(doc_id, doc_type,
+                        doc_values)
+            except ConflictError:
+                return Response(status=409)
+            except InternalServerError:
+                return Response(status=500)
+        else:
+            try:
+                result = PEDoc.create_and_get_by_dict(doc_id, doc_type,
+                        doc_values)
+            except InternalServerError:
+                return Response(status=500)
 
         return render_escaped_json_response(result)
 
 
-class UpdateHandler(BaseHandler):
+class RestfulHandler(BaseHandler):
+
+    def get(self, doc_type, doc_id):
+        pass
 
     def post(self, doc_type, doc_id):
+        if self.request.args.get('_method') == 'delete':
+            return self.delete(doc_type, doc_id)
+
         doc = self.request.args.get('_doc')
 
         try:
@@ -67,34 +80,43 @@ class UpdateHandler(BaseHandler):
             return Response(status=404)
 
         if PEDoc.get_by_key_name(doc_id) is None:
-            return Response(status=404)
-
-        try:
-            result = PEDoc.update_and_get_by_dict(doc_id, doc_type, doc_values)
-        except InternalServerError:
-            return Response(status=500)
-        except ConflictError:
-            return Response(status=409)
+            try:
+                result = PEDoc.create_and_get_by_dict(doc_id, doc_type,
+                        doc_values)
+            except InternalServerError:
+                return Response(status=500)
+        else:
+            try:
+                result = PEDoc.update_and_get_by_dict(doc_id, doc_type,
+                        doc_values)
+            except ConflictError:
+                return Response(status=409)
+            except InternalServerError:
+                return Response(status=500)
 
         return render_escaped_json_response(result)
 
     def put(self, doc_type, doc_id):
+        if PEDoc.get_by_key_name(doc_id) is None:
+            return Response(status=404)
+
         return self.post(doc_type, doc_id)
 
+    def delete(self, doc_type, doc_id):
+        updated_at = self.request.args.get('_checkUpdatesAfter')
+        if updated_at is None:
+            updated_at = self.request.args.get('_updatedAt')
 
-class DeleteHandler(BaseHandler):
+        try:
+            result = PEDoc.delete_in_txn(doc_id, updated_at)
+        except NotFound:
+            return Response(status=404)
+        except ConflictError:
+            return Response(status=409)
+        except InternalServerError:
+            return Response(status=500)
 
-    pass
+        return Response(status=200)
 
-
-    # def get(self, doc_type):
-    #     doc = self.request.args.get('_doc')
-
-    #     try:
-    #         doc_values = self._json_to_obj(doc)
-    #     except NotFound:
-    #         return Response(status=404)
-
-    #     return render_escaped_json_response(doc)
 
 

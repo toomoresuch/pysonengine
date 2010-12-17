@@ -13,9 +13,9 @@
 from tipfy import Rule
 
 UPDATE = Rule('/_api/<doc_type>/<doc_id>', endpoint='api/doctype/docid',
-              handler='apps.api.handlers.RestfulHandler')
+              handler='apps.api.handlers.ByDocIdHandler')
 CREATE = Rule('/_api/<doc_type>', endpoint='api/doctype',
-              handler='apps.api.handlers.CreateHandler')
+              handler='apps.api.handlers.ByDocTypeHandler')
 
 
 def get_rules(app):

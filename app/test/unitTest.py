@@ -36,6 +36,7 @@ class TestCase(gae_test_base.GAETestBase):
     SEED_FOR_UP_B = '{"boolean": [false, true]%s}'
     SEED_FOR_UP_D = '{"double": 3e-1%s}'
     SEED_FOR_UP_S = '{"string": "Fuga"%s}'
+    SEED_FOR_UP_Z = '{"foo": "bar"%s}'
 
     DAT = urllib.quote(SEED % '')
     DAT_WITH_DOC_ID = urllib.quote(SEED % DOC_ID)
@@ -43,15 +44,17 @@ class TestCase(gae_test_base.GAETestBase):
     DAT_FOR_UP_B = urllib.quote(SEED_FOR_UP_B % '')
     DAT_FOR_UP_D = urllib.quote(SEED_FOR_UP_D % '')
     DAT_FOR_UP_S = urllib.quote(SEED_FOR_UP_S % '')
+    DAT_FOR_UP_Z = urllib.quote(SEED_FOR_UP_Z % '')
     DAT_FOR_UP_B_WITH_DOC_ID = urllib.quote(SEED_FOR_UP_B % DOC_ID)
     DAT_FOR_UP_D_WITH_DOC_ID = urllib.quote(SEED_FOR_UP_D % DOC_ID)
     DAT_FOR_UP_S_WITH_DOC_ID = urllib.quote(SEED_FOR_UP_S % DOC_ID)
+    DAT_FOR_UP_Z_WITH_DOC_ID = urllib.quote(SEED_FOR_UP_Z % DOC_ID)
 
     CLIENT = Tipfy(rules=[Rule('/_api/<doc_type>/<doc_id>',
                    endpoint='api/doctype/docid',
-                   handler='apps.api.handlers.RestfulHandler'),
+                   handler='apps.api.handlers.ByDocIdHandler'),
                    Rule('/_api/<doc_type>', endpoint='api/doctype',
-                   handler='apps.api.handlers.CreateHandler'
+                   handler='apps.api.handlers.ByDocTypeHandler'
                    )]).get_test_client()
 
     def setUp(self):
@@ -188,12 +191,18 @@ class TestCase(gae_test_base.GAETestBase):
                               % self.DAT_FOR_UP_D)
         self._assert_update(response, update_syntax_response, 'double', 0.3)
 
-        # データを更新 put
+        # データを更新 create syntax for PUT
 
-        put_response = \
+        create_syntax_for_put = self.CLIENT.put('/_api/myDoc?_doc=%s'
+                % self.DAT_FOR_UP_S_WITH_DOC_ID)
+        self._assert_update(response, create_syntax_for_put, 'string', 'Fuga')
+
+        # データを更新 update syntax for PUT
+
+        update_syntax_for_put = \
             self.CLIENT.put('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_doc=%s'
-                             % self.DAT_FOR_UP_S)
-        self._assert_update(response, put_response, 'string', 'Fuga')
+                             % self.DAT_FOR_UP_Z)
+        self._assert_update(response, update_syntax_for_put, 'foo', 'bar')
 
     # ---------------------------------------- #
     # ---------------------------------------- #
@@ -204,8 +213,8 @@ class TestCase(gae_test_base.GAETestBase):
 
         self.CLIENT.post('/_api/myDoc?_doc=%s' % self.DAT_WITH_DOC_ID)
         response = \
-            self.CLIENT.put('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_method=delete'
-                            )
+            self.CLIENT.post('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_method=delete'
+                             )
 
         # status code の確認 & データの削除を確認
 
@@ -228,6 +237,31 @@ class TestCase(gae_test_base.GAETestBase):
     # ---------------------------------------- #
     # ---------------------------------------- #
 
+    def test_success_get_a_entity_and_entities_by_json(self):
+
+        # データを新規保存
+
+        self.CLIENT.post('/_api/myDoc?_doc=%s' % self.DAT)
+        self.CLIENT.post('/_api/myDoc?_doc=%s' % self.DAT_WITH_DOC_ID)
+
+         # データの取得 & status code の確認
+
+        response = \
+            self.CLIENT.get('/_api/myDoc/1234567890abcdefghijklmnopqrstuv')
+        obj = json.loads(response.data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(obj['_docId'], '1234567890abcdefghijklmnopqrstuv')
+
+        response_entities = self.CLIENT.get('/_api/myDoc')
+        obj_entities = json.loads(response_entities.data)
+
+        self.assertEqual(response_entities.status_code, 200)
+        self.assertEqual(len(obj_entities['myDoc']), 2)
+
+    # ---------------------------------------- #
+    # ---------------------------------------- #
+
     def test_get_status_code_403(self):
         pass
 
@@ -242,12 +276,22 @@ class TestCase(gae_test_base.GAETestBase):
         self.assertEqual(response.status_code, 404)
 
         response = \
+            self.CLIENT.post('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_doc'
+                             )
+        self.assertEqual(response.status_code, 404)
+
+        response = \
             self.CLIENT.put('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_doc')
         self.assertEqual(response.status_code, 404)
 
         # _doc の値が空の場合
 
         response = self.CLIENT.post('/_api/myDoc?_doc=')
+        self.assertEqual(response.status_code, 404)
+
+        response = \
+            self.CLIENT.post('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_doc='
+                             )
         self.assertEqual(response.status_code, 404)
 
         response = \
@@ -285,33 +329,56 @@ class TestCase(gae_test_base.GAETestBase):
         # データを更新 by _updatedAt & status code の確認
 
         dat = '{"string": "Fuga", "_updatedAt": "%s"}' % obj['_updatedAt']
-        updated_response = \
+
+        updatedAt_response_post = \
+            self.CLIENT.post('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_doc=%s'
+                              % urllib.quote(dat))
+        self.assertEqual(updatedAt_response_post.status_code, 409)
+
+        updatedAt_response_put = \
             self.CLIENT.put('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_doc=%s'
                              % urllib.quote(dat))
-        self.assertEqual(updated_response.status_code, 409)
+        self.assertEqual(updatedAt_response_put.status_code, 409)
 
         # データを更新 by _checkUpdatesAfter & status code の確認
 
         dat = '{"string": "Fuga", "_checkUpdatesAfter": "%s"}' \
             % obj['_updatedAt']
-        updated_response = \
+
+        checkUpdatesAfter_response_post = \
+            self.CLIENT.post('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_doc=%s'
+                              % urllib.quote(dat))
+        self.assertEqual(checkUpdatesAfter_response_post.status_code, 409)
+
+        checkUpdatesAfter_response_put = \
             self.CLIENT.put('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_doc=%s'
                              % urllib.quote(dat))
-        self.assertEqual(updated_response.status_code, 409)
+        self.assertEqual(checkUpdatesAfter_response_put.status_code, 409)
 
         # データを削除 by _updatedAt & status code の確認
 
-        response = \
+        updatedAt_response_post_delete = \
+            self.CLIENT.post('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_method=delete&_updatedAt=%s'
+                              % obj['_updatedAt'])
+        self.assertEqual(updatedAt_response_post_delete.status_code, 409)
+
+        updatedAt_response_delete = \
             self.CLIENT.delete('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_updatedAt=%s'
                                 % obj['_updatedAt'])
-        self.assertEqual(updated_response.status_code, 409)
+        self.assertEqual(updatedAt_response_delete.status_code, 409)
 
         # データを削除 by _checkUpdatesAfter & status code の確認
 
-        response = \
+        checkUpdatesAfter_response_post_delete = \
+            self.CLIENT.post('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_method=delete&_checkUpdatesAfter=%s'
+                              % obj['_updatedAt'])
+        self.assertEqual(checkUpdatesAfter_response_post_delete.status_code,
+                         409)
+
+        checkUpdatesAfter_response_delete = \
             self.CLIENT.delete('/_api/myDoc/1234567890abcdefghijklmnopqrstuv?_checkUpdatesAfter=%s'
                                 % obj['_updatedAt'])
-        self.assertEqual(updated_response.status_code, 409)
+        self.assertEqual(checkUpdatesAfter_response_delete.status_code, 409)
 
     # ---------------------------------------- #
     # ---------------------------------------- #

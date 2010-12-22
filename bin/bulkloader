@@ -18,7 +18,7 @@ sys.path[0:0] = [
     join(base, 'app'),
     join(base, 'app/distlib'),
     join(base, 'app/lib'),
-    join(base, 'eggs/appfy.recipe.gae-0.9.2-py2.6.egg'),
+    join(base, 'eggs/appfy.recipe.gae-0.9.3-py2.6.egg'),
     join(base, 'parts/google_appengine'),
     ]
 

@@ -12,10 +12,13 @@
 
 from tipfy import Rule
 
-UPDATE = Rule('/_api/<doc_type>/<doc_id>', endpoint='api/doctype/docid',
-              handler='apps.api.handlers.ByDocIdHandler')
-CREATE = Rule('/_api/<doc_type>', endpoint='api/doctype',
-              handler='apps.api.handlers.ByDocTypeHandler')
+ACL_FOR_DOCTYPE = Rule('/_api/acl/<doc_type>', endpoint='api/acl/doctype',
+                       handler='apps.api.handlers.ACLforDocTypeHandler')
+
+DOC_BY_DOCID = Rule('/_api/<doc_type>/<doc_id>', endpoint='api/doctype/docid',
+                    handler='apps.api.handlers.DocByDocIdHandler')
+DOC_BY_DOCTYPE = Rule('/_api/<doc_type>', endpoint='api/doctype',
+                      handler='apps.api.handlers.DocByDocTypeHandler')
 
 
 def get_rules(app):
@@ -27,7 +30,7 @@ def get_rules(app):
         A list of class:`tipfy.Rule` instances.
     """
 
-    rules = [UPDATE, CREATE]
+    rules = [ACL_FOR_DOCTYPE, DOC_BY_DOCID, DOC_BY_DOCTYPE]
 
     return rules
 

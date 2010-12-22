@@ -1,0 +1,35 @@
+Metadata-Version: 1.0
+Name: tipfy.ext.acl
+Version: 0.6
+Summary: Access Control extension for tipfy
+Home-page: http://www.tipfy.org/
+Author: Rodrigo Moraes
+Author-email: rodrigo.moraes@gmail.com
+License: BSD
+Description: 
+        tipfy.ext.acl
+        =============
+        
+        This extension provides an Access Control implementation for `tipfy <http://www.tipfy.org/>`_.
+        
+        Links
+        -----
+        * `Documentation <http://www.tipfy.org/wiki/extensions/acl/>`_
+        * `Source Code Repository <http://code.google.com/p/tipfy-ext-acl/>`_
+        * `Issue Tracker <http://code.google.com/p/tipfy-ext-acl/issues/list>`_
+        
+        About tipfy
+        -----------
+        * `Home page <http://www.tipfy.org/>`_
+        * `Extension list <http://www.tipfy.org/wiki/extensions/>`_
+        * `Discussion Group <http://groups.google.com/group/tipfy>`_
+        
+Platform: any
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
+Classifier: Topic :: Software Development :: Libraries :: Python Modules

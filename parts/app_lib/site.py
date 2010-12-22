@@ -270,6 +270,7 @@ def addsitepackages(known_paths):
         join(base, 'eggs/simplejson-2.1.2-py2.6-linux-x86_64.egg'),
         join(base, 'eggs/tipfy-0.6.4-py2.6.egg'),
         join(base, 'eggs/distribute-0.6.14-py2.6.egg'),
+        join(base, 'eggs/tipfy.ext.acl-0.6-py2.6.egg'),
         join(base, 'eggs/tipfy.ext.appstats-0.6-py2.6.egg'),
         join(base, 'eggs/tipfy.ext.auth-0.6.4-py2.6.egg'),
         join(base, 'eggs/tipfy.ext.auth.facebook-0.2-py2.6.egg'),

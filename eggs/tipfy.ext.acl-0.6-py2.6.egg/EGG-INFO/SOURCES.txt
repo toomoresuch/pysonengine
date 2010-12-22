@@ -1,0 +1,17 @@
+AUTHORS.txt
+CHANGES.txt
+LICENSE.txt
+MANIFEST.in
+README.txt
+setup.cfg
+setup.py
+tipfy/__init__.py
+tipfy.ext.acl.egg-info/PKG-INFO
+tipfy.ext.acl.egg-info/SOURCES.txt
+tipfy.ext.acl.egg-info/dependency_links.txt
+tipfy.ext.acl.egg-info/namespace_packages.txt
+tipfy.ext.acl.egg-info/not-zip-safe
+tipfy.ext.acl.egg-info/requires.txt
+tipfy.ext.acl.egg-info/top_level.txt
+tipfy/ext/__init__.py
+tipfy/ext/acl.py

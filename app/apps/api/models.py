@@ -15,6 +15,7 @@ import random
 import string
 
 from google.appengine.ext import db
+from tipfy.ext.acl import AclRules
 from tipfy.ext.db import JsonProperty, retry_on_timeout
 from werkzeug.exceptions import abort
 
@@ -179,6 +180,20 @@ class DocTypeInfo(PEDoc):
 
     description = db.TextProperty()
     scheme = JsonProperty()
+
+
+class AclRulesPlus(AclRules):
+
+    @classmethod
+    def get_by_area(cls, area):
+        return AclRules.gql('WHERE area = :1', area)
+
+    @classmethod
+    def get_by_list(cls, area):
+        result = []
+        for i in cls.get_by_area(area):
+            result.append({i.user: ''.join(i.roles)})
+        return result
 
 
 

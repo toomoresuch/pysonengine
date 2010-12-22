@@ -1,5 +1,6 @@
 ## Directories. ##
 distlib/*
+*/temp/*
 
 ## Any Files fixed by extension. ##
 *.pyc

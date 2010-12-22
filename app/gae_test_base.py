@@ -78,6 +78,7 @@ if not is_in_production():
     from google.appengine.api import mail_stub
     from google.appengine.api import urlfetch_stub
     from google.appengine.api import user_service_stub
+    from google.appengine.api.memcache import memcache_stub
 
     AUTH_DOMAIN = 'gmail.com'
     LOGGED_IN_USER = 'test@gmail.com'
@@ -127,7 +128,8 @@ def get_dev_apiproxy():
                            datastore_file_stub.DatastoreFileStub(APP_ID, None, None))
     _apiproxy.RegisterStub('user', user_service_stub.UserServiceStub())
     _apiproxy.RegisterStub('urlfetch', urlfetch_stub.URLFetchServiceStub())
-    _apiproxy.RegisterStub('mail', mail_stub.MailServiceStub()) 
+    _apiproxy.RegisterStub('mail', mail_stub.MailServiceStub())
+    _apiproxy.RegisterStub('memcache', memcache_stub.MemcacheServiceStub())
     return _apiproxy
 
 class GAETestBase(unittest.TestCase):

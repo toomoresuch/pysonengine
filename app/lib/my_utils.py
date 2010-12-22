@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import logging
+
+from google.appengine.api.users import get_current_user
 from simplejson.encoder import JSONEncoder
 from tipfy import Response
+from tipfy.ext.acl import Acl
 from werkzeug.exceptions import HTTPException
 
 
@@ -54,6 +58,25 @@ def render_escaped_json_response(*args, **kwargs):
 class ConflictError(HTTPException):
 
     code = 409
+
+
+def required_admin_role(area, acls_count=None):
+
+    def decorator(original_function):
+
+        def decorated_function(*args, **kwargs):
+            user = get_current_user().email()
+            acl = Acl(area, user)
+
+            if acl.is_one('admin') or acls_count == 0:
+                return original_function(*args, **kwargs)
+            else:
+                return Response(response='{"error": "No Admin"}', status=400,
+                                mimetype='application/json')
+
+        return decorated_function
+
+    return decorator
 
 
 
